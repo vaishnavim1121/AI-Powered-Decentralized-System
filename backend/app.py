@@ -34,8 +34,7 @@ with app.app_context():
 
 # ---------- Helper functions (PLACEHOLDERS for AI & Blockchain) ----------
 def run_ai_prediction(features):
-    # TODO: MEMBER 2 will replace this
-    return {"prediction": "malicious", "confidence": 0.95, "explanation": {"feature1": 0.3}}
+    return predict(features)   # returns dict with prediction, confidence, explanation
 
 def store_on_blockchain(threat_hash):
     bi = BlockchainInterface()
