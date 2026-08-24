@@ -5,6 +5,10 @@ from config import Config
 from datetime import datetime
 import bcrypt
 
+import sys
+sys.path.append(r'C:\Users\ASUS\OneDrive\Desktop\adctin-project\blockchain\src')
+from web3_interface import BlockchainInterface
+
 app = Flask(__name__)
 app.config.from_object(Config)
 db.init_app(app)
@@ -34,8 +38,8 @@ def run_ai_prediction(features):
     return {"prediction": "malicious", "confidence": 0.95, "explanation": {"feature1": 0.3}}
 
 def store_on_blockchain(threat_hash):
-    # TODO: MEMBER 3 will replace this
-    return "0x1234567890abcdef1234567890abcdef12345678"
+    bi = BlockchainInterface()
+    return bi.store_threat(threat_hash, severity=5)
 
 # ---------- Routes ----------
 @app.route('/register', methods=['POST'])
