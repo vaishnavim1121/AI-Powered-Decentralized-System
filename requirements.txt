@@ -1,3 +1,12 @@
-Flask Flask-SQLAlchemy PyMySQL flask-jwt-extended
-scikit-learn pandas numpy shap joblib
-web3 eth-account
+Flask
+Flask-SQLAlchemy
+PyMySQL
+flask-jwt-extended
+flask-cors
+scikit-learn
+pandas
+numpy
+shap
+joblib
+web3
+eth-account

@@ -1,16 +1,24 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from models import db, User, Threat, Alert
 from config import Config
 from datetime import datetime
 import bcrypt
 
+import os
 import sys
-sys.path.append(r'C:\Users\ASUS\OneDrive\Desktop\adctin-project\blockchain\src')
+
+# Resolve sibling modules relative to this repo, not a machine-specific path.
+_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.join(_REPO_ROOT, 'blockchain', 'src'))
+sys.path.append(os.path.join(_REPO_ROOT, 'ai-module', 'src'))
 from web3_interface import BlockchainInterface
+from predict import predict
 
 app = Flask(__name__)
 app.config.from_object(Config)
+CORS(app, resources={r"/*": {"origins": os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',')}})
 db.init_app(app)
 jwt = JWTManager(app)
 
