@@ -1,23 +1,60 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.db
+*.sqlite3
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-
-# testing
-/coverage
-
-# production
-/build
-
-# misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
+# Node
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
+build/
+dist/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AI Models (large binary files)
+*.joblib
+*.pkl
+*.h5
+*.pt
+*.pth
+
+# Blockchain
+*.abi
+*.bin
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+backend/instance/
+frontend/build/
+frontend/node_modules/
+ai_module/models/
+blockchain/build/
