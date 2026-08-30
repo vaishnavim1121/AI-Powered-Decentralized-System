@@ -4,21 +4,26 @@ import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-function Login() {
+function Register() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast.error('❌ Passwords do not match');
+      return;
+    }
+    
     try {
-      const res = await api.post('/login', { username, password });
-      localStorage.setItem('token', res.data.access_token);
-      localStorage.setItem('username', username);
-      toast.success('✅ Login successful!');
-      setTimeout(() => navigate('/dashboard'), 1000);
+      await api.post('/register', { username, password });
+      toast.success('✅ Registration successful! Please login.');
+      setTimeout(() => navigate('/login'), 1500);
     } catch (err) {
-      toast.error('❌ Login failed: ' + (err.response?.data?.msg || 'Invalid credentials'));
+      toast.error('❌ Registration failed: ' + (err.response?.data?.msg || 'Try again'));
     }
   };
 
@@ -27,13 +32,13 @@ function Login() {
       <ToastContainer />
       <div className="auth-card">
         <h1>🛡️ Threat Intelligence</h1>
-        <h2>Sign in to continue</h2>
+        <h2>Create an account</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Username</label>
             <input
               type="text"
-              placeholder="test"
+              placeholder="Choose a username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -49,14 +54,24 @@ function Login() {
               required
             />
           </div>
-          <button type="submit" className="submit-btn">Sign in</button>
+          <div className="form-group">
+            <label>Confirm Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="submit-btn">Register & sign in</button>
         </form>
         <p className="auth-link">
-          Don't have an account? <a href="/register">Create one</a>
+          I already have an account <a href="/login">Sign in</a>
         </p>
       </div>
     </div>
   );
 }
 
-export default Login;
+export default Register;

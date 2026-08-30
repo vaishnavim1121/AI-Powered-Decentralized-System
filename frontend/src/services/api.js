@@ -1,50 +1,70 @@
 import axios from 'axios';
 
-export const TOKEN_KEY = 'adctin_token';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
-export const getToken = () => localStorage.getItem(TOKEN_KEY);
-export const setToken = (token) => localStorage.setItem(TOKEN_KEY, token);
-export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
-
+// Create axios instance
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000',
-  headers: { 'Content-Type': 'application/json' },
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Attach the JWT to every outgoing request.
-api.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// Request interceptor - add token to every request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// A 401 means the token is missing/expired: drop it and bounce to the login page.
+// Response interceptor - handle 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
-      clearToken();
-      if (window.location.pathname !== '/login') {
-        window.location.replace('/login');
+    // Only redirect to login for 401, but NOT for login/register requests
+    if (error.response?.status === 401) {
+      const currentPath = window.location.pathname;
+      // Don't redirect if we're already on login/register
+      if (currentPath !== '/login' && currentPath !== '/register') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        window.location.href = '/login';
       }
     }
     return Promise.reject(error);
   }
 );
 
-// ---------- API calls ----------
-export const register = (username, password) =>
-  api.post('/register', { username, password });
+// Auth API calls
+export const register = (username, password) => {
+  return api.post('/register', { username, password });
+};
 
-export const login = (username, password) =>
-  api.post('/login', { username, password });
+export const login = (username, password) => {
+  return api.post('/login', { username, password });
+};
 
-export const submitThreat = (payload) => api.post('/threat', payload);
+export const clearToken = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+};
 
-export const fetchThreats = () => api.get('/threats');
+// Threat API calls
+export const submitThreat = (payload) => {
+  return api.post('/threat', payload);
+};
 
-export const fetchAlerts = () => api.get('/alerts');
+export const fetchThreats = () => {
+  return api.get('/threats');
+};
+
+export const fetchAlerts = () => {
+  return api.get('/alerts');
+};
 
 export default api;

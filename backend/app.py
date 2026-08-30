@@ -5,50 +5,61 @@ from models import db, User, Threat, Alert
 from config import Config
 from datetime import datetime
 import bcrypt
-
 import os
 import sys
 
-# Resolve sibling modules relative to this repo, not a machine-specific path.
-_REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(os.path.join(_REPO_ROOT, 'blockchain', 'src'))
-sys.path.append(os.path.join(_REPO_ROOT, 'ai-module', 'src'))
-from web3_interface import BlockchainInterface
-from predict import predict
+# ── Add parent directory to path for imports ──
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE_DIR)
+
+# ── Import from sibling modules ──
+from ai_module.src.predict import predict
+from blockchain.src.web3_interface import BlockchainInterface
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app, resources={r"/*": {"origins": os.environ.get('CORS_ORIGINS', 'http://localhost:3000').split(',')}})
+
+# ── CORS – allow all origins ──
+CORS(app, resources={r"/*": {"origins": "*"}})
+
 db.init_app(app)
 jwt = JWTManager(app)
 
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from werkzeug.exceptions import Unauthorized
+# ... rest of your code ...
 
+# ── JWT error handlers ──
 @jwt.unauthorized_loader
-def unauthorized_callback(callback):
+def unauthorized_callback(reason):
     return jsonify({"msg": "Missing or invalid token"}), 401
 
 @jwt.invalid_token_loader
-def invalid_token_callback(callback):   # this param is actually the error *reason string*
+def invalid_token_callback(reason):
     return jsonify({"msg": "Invalid token"}), 401
 
 @jwt.expired_token_loader
-def expired_token_callback(callback):
+def expired_token_callback(jwt_header, jwt_data):
     return jsonify({"msg": "Token expired"}), 401
-# Create tables if not exist
+
+# ── Create database tables ──
 with app.app_context():
     db.create_all()
 
-# ---------- Helper functions (PLACEHOLDERS for AI & Blockchain) ----------
+# ── Real AI & Blockchain helpers ──
 def run_ai_prediction(features):
-    return predict(features)   # returns dict with prediction, confidence, explanation
+    """Call the AI module; returns dict with prediction, confidence, explanation."""
+    return predict(features)
 
 def store_on_blockchain(threat_hash):
+    """Store threat hash on Ganache; returns transaction hash."""
     bi = BlockchainInterface()
     return bi.store_threat(threat_hash, severity=5)
 
-# ---------- Routes ----------
+# ── Routes ──
+
+@app.route('/')
+def health():
+    return jsonify({"status": "ADCTIN backend is running"}), 200
+
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -58,7 +69,7 @@ def register():
         return jsonify({"msg": "Missing username or password"}), 400
     if User.query.filter_by(username=username).first():
         return jsonify({"msg": "User already exists"}), 409
-    
+
     hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
     user = User(username=username, password_hash=hashed.decode('utf-8'))
     db.session.add(user)
@@ -79,20 +90,42 @@ def login():
 def submit_threat():
     user_id = int(get_jwt_identity())
     data = request.get_json()
-    
-    # For now, assume features are passed directly (MEMBER 2 will decide format)
-    features = data.get('features')  # list of numbers
-    file_hash = data.get('file_hash')
+    if data is None:
+        return jsonify({"msg": "Missing JSON body"}), 400
+
+    features = data.get('features')
     url = data.get('url')
+    file_hash = data.get('file_hash')
     
-    # Call AI (placeholder)
-    ai_result = run_ai_prediction(features)
+    # Determine what to pass to the AI
+    ai_input = None
     
-    # Call Blockchain (placeholder)
-    threat_identifier = file_hash if file_hash else url
-    tx_hash = store_on_blockchain(threat_identifier)
+    # If we have a URL, use it directly
+    if url:
+        ai_input = url
+    elif features and len(features) > 0:
+        # Use features (for backward compatibility)
+        ai_input = features
+    elif file_hash:
+        # Use file hash as input
+        ai_input = file_hash
+    else:
+        return jsonify({"msg": "Missing URL, features, or file hash"}), 400
     
-    # Save to DB
+    # Call AI prediction
+    try:
+        ai_result = run_ai_prediction(ai_input)
+    except Exception as e:
+        return jsonify({"msg": f"AI prediction failed: {str(e)}"}), 500
+
+    # Call Blockchain storage
+    threat_identifier = file_hash if file_hash else (url if url else "unknown")
+    try:
+        tx_hash = store_on_blockchain(threat_identifier)
+    except Exception as e:
+        return jsonify({"msg": f"Blockchain storage failed: {str(e)}"}), 500
+    
+    # Save to database
     threat = Threat(
         user_id=user_id,
         file_hash=file_hash,
@@ -142,4 +175,4 @@ def get_alerts():
     } for a in alerts])
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, host='0.0.0.0')
