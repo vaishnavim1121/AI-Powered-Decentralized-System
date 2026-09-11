@@ -1,0 +1,273 @@
+"""
+Intent Analyzer — goes beyond URL patterns and figures out WHAT the page is trying to do
+"""
+
+import re
+import urllib.parse
+from datetime import datetime
+import whois  # pip install python-whois
+import socket
+
+
+# ============================================
+# Known brands that are commonly impersonated
+# ============================================
+
+IMPERSONATED_BRANDS = {
+    'paypal': 'PayPal',
+    'apple': 'Apple ID',
+    'google': 'Google Account',
+    'microsoft': 'Microsoft Account',
+    'amazon': 'Amazon',
+    'netflix': 'Netflix',
+    'facebook': 'Facebook',
+    'instagram': 'Instagram',
+    'whatsapp': 'WhatsApp',
+    'bank': 'Financial Institution',
+    'chase': 'Chase Bank',
+    'wellsfargo': 'Wells Fargo',
+    'bankofamerica': 'Bank of America',
+    'coinbase': 'Coinbase',
+    'binance': 'Binance',
+    'metamask': 'MetaMask',
+    'trustwallet': 'Trust Wallet',
+}
+
+
+# ============================================
+# Domain Intelligence
+# ============================================
+
+def get_domain_age_days(hostname):
+    """How old is the domain? New domains = high risk"""
+    try:
+        domain_info = whois.whois(hostname)
+        creation_date = domain_info.creation_date
+        
+        if isinstance(creation_date, list):
+            creation_date = creation_date[0]
+        
+        if creation_date:
+            age = (datetime.now() - creation_date).days
+            return age
+        return None
+    except Exception:
+        return None
+
+
+def analyze_domain(hostname):
+    """Analyze domain for red flags"""
+    flags = []
+    score = 0
+    
+    # Age check
+    age_days = get_domain_age_days(hostname)
+    if age_days is not None:
+        if age_days < 7:
+            flags.append(f"Domain registered only {age_days} days ago")
+            score += 4
+        elif age_days < 30:
+            flags.append(f"Domain is very new ({age_days} days old)")
+            score += 3
+        elif age_days < 90:
+            flags.append(f"Domain is new ({age_days} days old)")
+            score += 1
+    
+    # Suspicious TLDs
+    tld = '.' + hostname.rsplit('.', 1)[-1] if '.' in hostname else ''
+    bad_tlds = ['.tk', '.ml', '.ga', '.cf', '.gq', '.xyz', '.top', '.work', '.click']
+    if tld in bad_tlds:
+        flags.append(f"Suspicious top-level domain ({tld})")
+        score += 2
+    
+    # IP address instead of domain
+    if re.match(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$', hostname):
+        flags.append("Uses raw IP address instead of domain")
+        score += 3
+    
+    # Too many subdomains
+    if hostname.count('.') >= 4:
+        flags.append("Excessive subdomains (common in phishing)")
+        score += 2
+    
+    # Very long hostname
+    if len(hostname) > 40:
+        flags.append("Unusually long domain name")
+        score += 1
+    
+    # Many hyphens
+    if hostname.count('-') >= 3:
+        flags.append("Multiple hyphens in domain")
+        score += 1
+    
+    return {
+        'score': score,
+        'flags': flags,
+        'age_days': age_days,
+        'hostname': hostname,
+    }
+
+
+# ============================================
+# Intent Classification
+# ============================================
+
+def classify_intent(url, page_signals=None):
+    """
+    Determine the INTENT of the page
+    
+    page_signals: dict from content script with:
+        - has_login_form: bool
+        - has_password_field: bool
+        - has_credit_card_field: bool
+        - has_crypto_wallet_prompt: bool
+        - has_auto_download: bool
+        - has_hidden_iframe: bool
+        - page_title: str
+        - visible_brand_names: list
+    """
+    url_lower = url.lower()
+    parsed = urllib.parse.urlparse(url_lower)
+    hostname = parsed.hostname or ''
+    path = parsed.path or ''
+    page_signals = page_signals or {}
+    
+    intent = {
+        'type': 'unknown',
+        'confidence': 0.5,
+        'reasons': [],
+        'risk_level': 'low',
+    }
+    
+    # ============================================
+    # Detect impersonation (the strongest signal)
+    # ============================================
+    for brand_key, brand_name in IMPERSONATED_BRANDS.items():
+        if brand_key in hostname:
+            # Brand name in domain
+            # Is it the REAL domain or an impersonator?
+            real_domains = [f'{brand_key}.com', f'{brand_key}.org', f'{brand_key}.net']
+            is_real = hostname in real_domains
+            
+            if not is_real:
+                # Check if brand is in a suspicious part
+                for suffix in ['-secure', '-verify', '-login', '-update', '-account', '-support', 'secure-', 'login-', 'verify-']:
+                    if suffix in hostname:
+                        intent['type'] = f'Phishing — Impersonating {brand_name}'
+                        intent['confidence'] = 0.92
+                        intent['reasons'].append(f"Domain contains '{brand_name}' with suspicious prefix/suffix")
+                        intent['risk_level'] = 'critical'
+                        break
+                else:
+                    intent['type'] = f'Suspicious — Possible {brand_name} impersonation'
+                    intent['confidence'] = 0.75
+                    intent['reasons'].append(f"Domain contains '{brand_name}' but is not the official domain")
+                    intent['risk_level'] = 'high'
+    
+    # ============================================
+    # Detect phishing intent
+    # ============================================
+    if page_signals.get('has_password_field'):
+        if page_signals.get('has_login_form'):
+            if intent['type'] == 'unknown':
+                intent['type'] = 'Phishing — Credential Harvesting'
+                intent['confidence'] = 0.85
+                intent['reasons'].append("Page asks for login credentials")
+                intent['risk_level'] = 'high'
+    
+    if page_signals.get('has_credit_card_field'):
+        if intent['type'] == 'unknown':
+            intent['type'] = 'Financial Fraud — Card Data Collection'
+            intent['confidence'] = 0.88
+            intent['reasons'].append("Page requests credit card information")
+            intent['risk_level'] = 'critical'
+    
+    if page_signals.get('has_crypto_wallet_prompt'):
+        if intent['type'] == 'unknown':
+            intent['type'] = 'Crypto Scam — Wallet Drainer'
+            intent['confidence'] = 0.90
+            intent['reasons'].append("Page prompts to connect crypto wallet")
+            intent['risk_level'] = 'critical'
+    
+    # ============================================
+    # Detect malware distribution
+    # ============================================
+    if page_signals.get('has_auto_download'):
+        intent['type'] = 'Malware Distribution — Auto-download'
+        intent['confidence'] = 0.90
+        intent['reasons'].append("Page triggers automatic download")
+        intent['risk_level'] = 'critical'
+    
+    if page_signals.get('has_hidden_iframe'):
+        intent['type'] = 'Hidden Content / Clickjacking'
+        intent['confidence'] = 0.80
+        intent['reasons'].append("Page contains hidden iframes (clickjacking)")
+        intent['risk_level'] = 'high'
+    
+    # ============================================
+    # Fallback to URL patterns
+    # ============================================
+    if intent['type'] == 'unknown':
+        if any(kw in path for kw in ['login', 'verify', 'signin', 'secure', 'account']):
+            intent['type'] = 'Suspicious — Credential Collection'
+            intent['confidence'] = 0.70
+            intent['reasons'].append("URL path suggests credential collection")
+            intent['risk_level'] = 'medium'
+        
+        elif any(kw in url_lower for kw in ['free', 'download', 'crack', 'torrent', 'warez']):
+            intent['type'] = 'Suspicious — Piracy / Malware'
+            intent['confidence'] = 0.75
+            intent['reasons'].append("URL contains keywords associated with malware distribution")
+            intent['risk_level'] = 'medium'
+        
+        elif any(kw in url_lower for kw in ['crypto', 'bitcoin', 'wallet', 'airdrop']):
+            intent['type'] = 'Suspicious — Crypto Scam'
+            intent['confidence'] = 0.70
+            intent['reasons'].append("URL relates to cryptocurrency — common scam target")
+            intent['risk_level'] = 'medium'
+    
+    return intent
+
+
+# ============================================
+# Full Analysis
+# ============================================
+
+def analyze_url(url, page_signals=None):
+    """Complete analysis: domain + intent + risk"""
+    parsed = urllib.parse.urlparse(url)
+    hostname = parsed.hostname or ''
+    
+    domain_analysis = analyze_domain(hostname)
+    intent = classify_intent(url, page_signals)
+    
+    # Combine scores
+    total_risk = domain_analysis['score']
+    
+    if intent['risk_level'] == 'critical':
+        total_risk += 6
+    elif intent['risk_level'] == 'high':
+        total_risk += 4
+    elif intent['risk_level'] == 'medium':
+        total_risk += 2
+    
+    # Determine verdict
+    if total_risk >= 6:
+        verdict = 'malicious'
+    elif total_risk >= 3:
+        verdict = 'suspicious'
+    else:
+        verdict = 'benign'
+    
+    return {
+        'url': url,
+        'verdict': verdict,
+        'risk_score': total_risk,
+        'domain_analysis': domain_analysis,
+        'intent': intent,
+        'explanation': {
+            'what_it_does': intent['type'],
+            'why_suspicious': domain_analysis['flags'] + intent['reasons'],
+            'risk_level': intent['risk_level'],
+        }
+    }

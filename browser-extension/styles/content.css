@@ -1,0 +1,182 @@
+/* ============================================
+   ADCTIN Browser Extension - Content Styles
+   ============================================ */
+
+/* Suspicious Link Indicator */
+.adctin-suspicious {
+  position: relative;
+  border: 2px solid #d45c4c !important;
+  border-radius: 4px;
+  background-color: rgba(212, 92, 76, 0.05) !important;
+}
+
+/* Badge */
+.adctin-badge {
+  display: inline-block;
+  background: #d45c4c;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 50%;
+  font-size: 10px;
+  margin-left: 4px;
+  cursor: help;
+  animation: pulse-badge 2s infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Tooltip */
+.adctin-tooltip {
+  position: absolute;
+  z-index: 999999;
+  background: #1a1a2e;
+  color: #f5f0eb;
+  padding: 16px;
+  border-radius: 8px;
+  max-width: 280px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.adctin-tooltip strong {
+  color: #d45c4c;
+}
+
+.adctin-tooltip p {
+  margin: 8px 0;
+  color: rgba(245, 240, 235, 0.8);
+}
+
+.adctin-tooltip-btn {
+  display: inline-block;
+  padding: 6px 14px;
+  margin: 4px 4px 0 0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.adctin-tooltip-btn[data-action="check"] {
+  background: #c17f59;
+  color: white;
+}
+
+.adctin-tooltip-btn[data-action="check"]:hover {
+  background: #9e6a4a;
+}
+
+.adctin-tooltip-btn[data-action="report"] {
+  background: rgba(255,255,255,0.1);
+  color: #f5f0eb;
+}
+
+.adctin-tooltip-btn[data-action="report"]:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* Page Warning Banner */
+.adctin-page-warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000000;
+  background: #1a1a2e;
+  color: #f5f0eb;
+  padding: 16px 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+.adctin-warning-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.adctin-warning-header span:first-child {
+  color: #d45c4c;
+}
+
+.adctin-warning-close {
+  cursor: pointer;
+  font-size: 24px;
+  color: rgba(245, 240, 235, 0.5);
+  transition: color 0.2s;
+}
+
+.adctin-warning-close:hover {
+  color: #f5f0eb;
+}
+
+.adctin-warning-body {
+  flex: 1;
+  font-size: 14px;
+}
+
+.adctin-warning-body strong {
+  color: #d45c4c;
+  font-size: 16px;
+}
+
+.adctin-warning-body p {
+  margin: 4px 0;
+  color: rgba(245, 240, 235, 0.8);
+}
+
+.adctin-warning-body small {
+  color: rgba(245, 240, 235, 0.5);
+  font-size: 12px;
+}
+
+.adctin-warning-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.adctin-warning-actions button {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.adctin-btn-secondary {
+  background: rgba(255,255,255,0.1);
+  color: #f5f0eb;
+}
+
+.adctin-btn-secondary:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.adctin-btn-primary {
+  background: #d45c4c;
+  color: white;
+}
+
+.adctin-btn-primary:hover {
+  background: #a84335;
+}

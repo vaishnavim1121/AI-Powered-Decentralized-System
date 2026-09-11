@@ -1,0 +1,254 @@
+/* ============================================
+   ADCTIN Popup Styles
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 360px;
+  background: #f5f0eb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a1a2e;
+}
+
+.popup-container {
+  padding: 16px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e0d8;
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+}
+
+.title {
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.version {
+  font-size: 10px;
+  color: #c17f59;
+  background: #e8e0d8;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+
+/* Status Bar */
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0ece7;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.active {
+  background: #3a7d5a;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.status-dot.inactive {
+  background: #d45c4c;
+}
+
+.status-text {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.threat-count {
+  font-size: 12px;
+  color: #6b6560;
+  margin-left: auto;
+}
+
+/* Current Page */
+.current-page {
+  background: white;
+  border-radius: 10px;
+  padding: 14px;
+  margin: 12px 0;
+  border: 1px solid #e8e0d8;
+}
+
+.current-page h4 {
+  font-size: 12px;
+  color: #6b6560;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.score-container {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.score {
+  font-size: 32px;
+  font-weight: 700;
+  color: #3a7d5a;
+}
+
+.score.suspicious {
+  color: #d45c4c;
+}
+
+.label {
+  font-size: 14px;
+  color: #6b6560;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b6560;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.quick-actions button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #1a1a2e;
+  color: #f5f0eb;
+}
+
+.btn-primary:hover {
+  background: #2d2a40;
+}
+
+.btn-secondary {
+  background: #e8e0d8;
+  color: #1a1a2e;
+}
+
+.btn-secondary:hover {
+  background: #d5cdc5;
+}
+
+/* Recent Alerts */
+.recent-alerts {
+  margin-top: 12px;
+}
+
+.recent-alerts h4 {
+  font-size: 12px;
+  color: #6b6560;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+#alert-list {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.no-alerts {
+  color: #6b6560;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.alert-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0ece7;
+  font-size: 12px;
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+}
+
+.alert-type {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.alert-type.malicious {
+  background: #fde8e4;
+  color: #d45c4c;
+}
+
+.alert-type.benign {
+  background: #e4f5ed;
+  color: #3a7d5a;
+}
+
+.alert-url {
+  color: #1a1a2e;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.alert-time {
+  color: #6b6560;
+  font-size: 10px;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f0ece7;
+  font-size: 10px;
+  color: #6b6560;
+  margin-top: 12px;
+}

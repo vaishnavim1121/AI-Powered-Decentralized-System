@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
@@ -178,6 +179,64 @@ def create_dataset():
     
     # PHISHING URLs
     phishing_urls = [
+=======
+def create_dataset():
+    print("📊 Creating dataset with real URLs...")
+    
+    # ============================================
+    # LEGITIMATE URLs (safe)
+    # ============================================
+    legitimate_urls = [
+        # ... keep your existing legitimate URLs ...
+        "https://www.youtube.com/watch?v=jmpUP1MaQ9Q",
+        "https://www.google.com",
+        "https://github.com",
+        "https://stackoverflow.com",
+        "https://www.wikipedia.org",
+        "https://www.amazon.com",
+        "https://www.netflix.com",
+        "https://www.spotify.com",
+        "https://www.linkedin.com",
+        "https://www.microsoft.com",
+        "https://www.apple.com",
+        "https://www.cloudflare.com",
+        "https://www.python.org",
+        "https://react.dev",
+        "https://www.bbc.com",
+        "https://www.cnn.com",
+        "https://www.nytimes.com",
+        "https://www.coursera.org",
+        "https://www.khanacademy.org",
+        "https://www.paypal.com",
+        "https://www.chase.com",
+        "https://www.wellsfargo.com",
+        "https://www.whitehouse.gov",
+        "https://www.usps.com",
+        # Add legitimate sites from varied categories
+        "https://www.reddit.com/r/cybersecurity",
+        "https://www.pinterest.com",
+        "https://www.walmart.com",
+        "https://www.target.com",
+        "https://www.ebay.com",
+        "https://www.etsy.com",
+        "https://www.airbnb.com",
+        "https://www.uber.com",
+        "https://www.doordash.com",
+        "https://www.zoom.us",
+        "https://www.dropbox.com",
+        "https://www.slack.com",
+        "https://www.notion.so",
+        "https://www.figma.com",
+        "https://www.medium.com",
+        "https://www.quora.com",
+    ]
+    
+    # ============================================
+    # REAL-WORLD MALICIOUS URLs (expanded)
+    # ============================================
+    phishing_urls = [
+        # Classic phishing
+>>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
         "http://paypa1-secure-verify.com/login",
         "https://amazon-account-verify.xyz",
         "http://bankofamerica-verify.net",
@@ -188,6 +247,7 @@ def create_dataset():
         "https://microsoft-update-login.net",
         "http://chase-bank-verify.com",
         "https://wells-fargo-login.xyz",
+<<<<<<< HEAD
         "http://bank-login-verify.com",
         "https://amazon-prime-update.net",
         "http://netflix-account-verify.com",
@@ -220,6 +280,110 @@ def create_dataset():
         "https://microsoft-verify.net",
         "http://secure-account-verify.ml/login",
         "https://amazon-security-check.gq",
+=======
+        
+        # Free-host phishing (common real pattern)
+        "http://login-verify.000webhostapp.com",
+        "https://secure-update.weebly.com/login",
+        "http://apple-verify.blogspot.com/p/login.html",
+        "https://paypal-confirm.wixsite.com/secure",
+        "http://banking-alert.godaddysites.com",
+        
+        # Suspicious TLDs used in real attacks
+        "http://download-free-software.top",
+        "https://prize-winner.tk",
+        "http://win-iphone.ml",
+        "https://claim-reward.ga",
+        "http://free-gift-card.cf",
+        "https://crypto-airdrop.gq",
+        
+        # Adult/malware distribution (common real threat)
+        "http://free-video-xxx.xyz",
+        "https://hot-girls-stream.tk",
+        "http://adult-content-mega.ml",
+        "https://xxx-video-free.ga",
+        "http://porn-mega-free.top",
+        
+        # Piracy/malware sites
+        "http://free-movies-hd.xyz",
+        "https://torrent-download.tk",
+        "http://cracked-software.ml",
+        "https://watch-free-movies.ga",
+        "http://download-cracked.cf",
+        "https://full-version-free.top",
+        "http://crack-games.gq",
+        
+        # Fake streaming sites (very common malware source)
+        "http://watch-netflix-free.xyz",
+        "https://free-streaming-hd.tk",
+        "http://watch-movies-online.ml",
+        "https://putlocker-free.ga",
+        "http://123movies-hd.cf",
+        "https://watch-series-free.top",
+        
+        # Crypto scams
+        "http://free-bitcoin-generator.xyz",
+        "https://crypto-giveaway.tk",
+        "http://eth-airdrop.ml",
+        "https://claim-free-btc.ga",
+        "http://btc-doubler.cf",
+        "https://free-crypto-now.top",
+        
+        # Fake lottery/prize
+        "http://you-won-iphone.xyz",
+        "https://claim-your-prize.tk",
+        "http://winner-lottery.ml",
+        "https://free-iphone-15.ga",
+        "http://amazon-gift-card.cf",
+        "https://free-amazon-voucher.top",
+        
+        # Fake bank/e-commerce login
+        "http://secure-bank-login.xyz",
+        "https://account-verify-bank.tk",
+        "http://update-payment-info.ml",
+        "https://confirm-transaction.ga",
+        "http://verify-account-now.cf",
+        "https://login-secure-banking.top",
+        
+        # Malware hosting patterns
+        "http://download-installer.exe.xyz",
+        "https://update-flash-player.tk",
+        "http://install-codec.ml",
+        "https://adobe-update-now.ga",
+        "http://java-update-required.cf",
+        "https://chrome-update-free.top",
+        
+        # Common suspicious paths
+        "http://1.2.3.4/login.php",
+        "https://192.168.1.1/admin",
+        "http://attacker-site.com/malware.exe",
+        "https://evil-server.xyz/payload",
+        "http://bad-actor.tk/steal",
+        
+        # URL shorteners to bad sites
+        "http://bit.ly/free-prize-scam",
+        "https://tinyurl.com/verify-account",
+        "http://ow.ly/claim-reward",
+        "https://is.gd/free-download",
+        
+        # Typosquatting
+        "http://gooogle.com",
+        "https://arnazon.com",
+        "http://paypa1.com",
+        "https://faceb00k.com",
+        "http://micros0ft.com",
+        "https://apple-id.com.fake.tk",
+        "http://g00gle-drive.xyz",
+        
+        # Suspicious subdomain chains
+        "http://secure.login.verify.account.bank.xyz",
+        "https://www.paypal.com.verify-now.tk",
+        "http://amazon.com.order-status.ml",
+        "https://apple.com.id-verify.ga",
+        "http://google.com.account-alert.cf",
+        
+        # More real-world phishing
+>>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
         "http://paypal-verify-account.tk",
         "https://apple-id-confirm.ga",
         "http://microsoft-update-now.cf",
@@ -230,6 +394,7 @@ def create_dataset():
         "https://facebook-security-alert.cf",
         "http://instagram-verify.ml",
         "https://twitter-account-confirm.gq",
+<<<<<<< HEAD
         "http://linkedin-login-verify.tk",
         "https://dropbox-security-check.ga",
         "http://google-drive-update.cf",
@@ -238,6 +403,8 @@ def create_dataset():
         "https://bank-of-america-login.tk",
         "http://apple-id-security.ga",
         "https://microsoft-account-verify.cf",
+=======
+>>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
     ]
     
     data = []
@@ -248,12 +415,17 @@ def create_dataset():
         features['label'] = 0
         data.append(features)
     
+<<<<<<< HEAD
     print(f"  → Processing {len(phishing_urls)} phishing URLs...")
+=======
+    print(f"  → Processing {len(phishing_urls)} malicious URLs...")
+>>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
     for url in phishing_urls:
         features = extract_url_features(url)
         features['label'] = 1
         data.append(features)
     
+<<<<<<< HEAD
     return pd.DataFrame(data)
 
 # ---------- Train ----------
@@ -328,3 +500,6 @@ def train_model():
 
 if __name__ == '__main__':
     train_model()
+=======
+    return pd.DataFrame(data)
+>>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)

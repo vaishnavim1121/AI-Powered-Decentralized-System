@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ADCTIN Protection</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <div class="header">
+      <img src="../icons/icon-48.png" alt="ADCTIN" class="logo">
+      <span class="title">ADCTIN</span>
+      <span class="version">v1.0</span>
+    </div>
+    
+    <!-- Status -->
+    <div class="status-bar">
+      <span class="status-dot active"></span>
+      <span class="status-text">Protection Active</span>
+      <span class="threat-count" id="threat-count">0 blocked</span>
+    </div>
+    
+    <!-- Current Page -->
+    <div class="current-page">
+      <h4>Current Page Security</h4>
+      <div class="score-container">
+        <span class="score" id="page-score">—</span>
+        <span class="label" id="page-label">Checking...</span>
+      </div>
+      <div class="stats">
+        <span>🔗 <span id="link-count">0</span> links</span>
+        <span>⚠️ <span id="suspicious-count">0</span> suspicious</span>
+      </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <button class="btn-primary" id="report-btn">📝 Report Suspicious</button>
+      <button class="btn-secondary" id="dashboard-btn">📊 Dashboard</button>
+    </div>
+    
+    <!-- Recent Alerts -->
+    <div class="recent-alerts">
+      <h4>Recent Alerts</h4>
+      <div id="alert-list">
+        <p class="no-alerts">No recent alerts</p>
+      </div>
+    </div>
+    
+    <!-- Footer -->
+    <div class="footer">
+      <span>AI-powered threat detection</span>
+      <span>•</span>
+      <span>Decentralized via blockchain</span>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
