@@ -124,7 +124,8 @@ def categorize_threat(url):
     
     # Piracy
     if any(kw in url_lower for kw in ['123movie', 'putlocker', 'watch-free', 'free-movies', 
-                                       'torrent', 'pirate', 'piratebay', 'yts', 'rarbg']):
+                                       'torrent', 'pirate', 'piratebay', 'yts', 'rarbg',
+                                       'movierulz', '5movie', 'tamilmv']):
         return {
             'type': 'Piracy / Malware Distribution',
             'risk': 'high',
@@ -379,14 +380,19 @@ def threat_check():
                 final_prediction = 'malicious'
                 final_confidence = max(final_confidence, 0.95)
                 malicious = True
-                vt_cats = list(vt_result.get('categories', {}).values())
-                if vt_cats and (not intent_type or intent_type == 'unknown'):
-                    intent_result['intent']['type'] = f"VirusTotal: {vt_cats[0]}"
-                    intent_result['intent']['risk_level'] = 'critical'
             elif vt_verdict == 'suspicious':
                 final_prediction = 'malicious'
                 final_confidence = max(final_confidence, 0.80)
                 malicious = True
+                # If intent type is still generic, use VT categories
+                if intent_type in ('unknown', 'AI-Detected Threat') and vt_result.get('categories'):
+                    ignore_cats = ('computersandsoftware', 'information technology')
+                    vt_cats = [c for c in vt_result['categories'].values() 
+                               if c.lower() not in ignore_cats]
+                    if vt_cats:
+                        intent_result['intent']['type'] = f"VirusTotal Flagged: {vt_cats[0]}"
+                        intent_result['intent']['risk_level'] = 'high'
+                        intent_result['explanation']['what_it_does'] = f"VirusTotal detected: {vt_cats[0]}"
         
         # Build category if still unknown
         if malicious and (intent_result['intent']['type'] == 'unknown' or intent_result['intent']['risk_level'] == 'low'):
