@@ -4,18 +4,6 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from models import db, User, Threat, Alert
 from config import Config
 from datetime import datetime
-<<<<<<< HEAD
-import bcrypt
-import os
-import sys
-
-# ── Add parent directory to path for imports ──
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, BASE_DIR)
-
-# ── Import from sibling modules ──
-from ai_module.src.predict import predict
-=======
 from time import time
 import bcrypt
 import os
@@ -30,25 +18,17 @@ sys.path.insert(0, BASE_DIR)
 from ai_module.src.predict import predict
 from ai_module.src.intent_analyzer import analyze_url
 from ai_module.src.virustotal import lookup_url as vt_lookup, is_available as vt_available
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
 from blockchain.src.web3_interface import BlockchainInterface
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-<<<<<<< HEAD
-# ── CORS – allow all origins ──
-=======
 # ── CORS ──
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 db.init_app(app)
 jwt = JWTManager(app)
 
-<<<<<<< HEAD
-# ... rest of your code ...
-=======
 # ── PRE-LOAD AI MODEL ──
 print("🔄 Pre-loading AI model...")
 try:
@@ -77,7 +57,6 @@ def is_rate_limited(client_ip):
         return True
     REQUEST_LOG[client_ip].append(now)
     return False
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
 
 # ── JWT error handlers ──
 @jwt.unauthorized_loader
@@ -92,27 +71,6 @@ def invalid_token_callback(reason):
 def expired_token_callback(jwt_header, jwt_data):
     return jsonify({"msg": "Token expired"}), 401
 
-<<<<<<< HEAD
-# ── Create database tables ──
-with app.app_context():
-    db.create_all()
-
-# ── Real AI & Blockchain helpers ──
-def run_ai_prediction(features):
-    """Call the AI module; returns dict with prediction, confidence, explanation."""
-    return predict(features)
-
-def store_on_blockchain(threat_hash):
-    """Store threat hash on Ganache; returns transaction hash."""
-    bi = BlockchainInterface()
-    return bi.store_threat(threat_hash, severity=5)
-
-# ── Routes ──
-
-@app.route('/')
-def health():
-    return jsonify({"status": "ADCTIN backend is running"}), 200
-=======
 with app.app_context():
     db.create_all()
 
@@ -236,7 +194,6 @@ def health():
         "status": "ADCTIN backend is running",
         "virustotal": vt_available()
     }), 200
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -275,53 +232,27 @@ def submit_threat():
     url = data.get('url')
     file_hash = data.get('file_hash')
     
-<<<<<<< HEAD
-    # Determine what to pass to the AI
-    ai_input = None
-    
-    # If we have a URL, use it directly
-    if url:
-        ai_input = url
-    elif features and len(features) > 0:
-        # Use features (for backward compatibility)
-        ai_input = features
-    elif file_hash:
-        # Use file hash as input
-=======
     ai_input = None
     if url:
         ai_input = url
     elif features and len(features) > 0:
         ai_input = features
     elif file_hash:
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
         ai_input = file_hash
     else:
         return jsonify({"msg": "Missing URL, features, or file hash"}), 400
     
-<<<<<<< HEAD
-    # Call AI prediction
-=======
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
     try:
         ai_result = run_ai_prediction(ai_input)
     except Exception as e:
         return jsonify({"msg": f"AI prediction failed: {str(e)}"}), 500
 
-<<<<<<< HEAD
-    # Call Blockchain storage
-=======
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
     threat_identifier = file_hash if file_hash else (url if url else "unknown")
     try:
         tx_hash = store_on_blockchain(threat_identifier)
     except Exception as e:
         return jsonify({"msg": f"Blockchain storage failed: {str(e)}"}), 500
     
-<<<<<<< HEAD
-    # Save to database
-=======
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
     threat = Threat(
         user_id=user_id,
         file_hash=file_hash,
@@ -334,10 +265,6 @@ def submit_threat():
     db.session.add(threat)
     db.session.commit()
     
-<<<<<<< HEAD
-    # Create alert
-=======
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
     alert = Alert(
         threat_id=threat.id,
         message=f"New {ai_result['prediction']} threat detected!"
@@ -373,8 +300,6 @@ def get_alerts():
         "created_at": a.created_at.isoformat()
     } for a in alerts])
 
-<<<<<<< HEAD
-=======
 # ═══════════════════════════════════════════
 # THREAT CHECK (AI + Intent + VirusTotal)
 # ═══════════════════════════════════════════
@@ -418,7 +343,7 @@ def threat_check():
         # ═══ LAYER 2: Intent Analysis ═══
         intent_result = analyze_url(url, signals)
         
-        # ═══ LAYER 3: VirusTotal (NEW) ═══
+        # ═══ LAYER 3: VirusTotal ═══
         vt_result = vt_lookup(url)
         
         # ═══ MERGE ═══
@@ -436,7 +361,7 @@ def threat_check():
             final_confidence = ai_result['confidence']
             malicious = False
         
-        # Override with Intent (higher priority)
+        # Override with Intent
         if intent_verdict == 'malicious' or intent_risk == 'critical':
             final_prediction = 'malicious'
             final_confidence = max(final_confidence, 0.85)
@@ -446,19 +371,16 @@ def threat_check():
             final_confidence = max(final_confidence, 0.70)
             malicious = True
         
-        # Override with VirusTotal (highest priority — real AV consensus)
+        # Override with VirusTotal
         if vt_result.get('available'):
             vt_verdict = vt_result.get('verdict', 'unknown')
-            vt_malicious = vt_result.get('malicious', 0)
-            vt_suspicious = vt_result.get('suspicious', 0)
             
             if vt_verdict == 'malicious':
                 final_prediction = 'malicious'
                 final_confidence = max(final_confidence, 0.95)
                 malicious = True
-                # Update threat type if VT has a category
                 vt_cats = list(vt_result.get('categories', {}).values())
-                if vt_cats and not intent_type or intent_type == 'unknown':
+                if vt_cats and (not intent_type or intent_type == 'unknown'):
                     intent_result['intent']['type'] = f"VirusTotal: {vt_cats[0]}"
                     intent_result['intent']['risk_level'] = 'critical'
             elif vt_verdict == 'suspicious':
@@ -520,7 +442,6 @@ def threat_check():
             "domain_analysis": intent_result['domain_analysis'],
             "explanation": intent_result['explanation'],
             
-            # NEW: VirusTotal data
             "virustotal": vt_summary,
         }
         
@@ -548,6 +469,7 @@ def cleanup_caches():
         for k in to_delete:
             del THREAT_CACHE[k]
 
->>>>>>> bc64e94 (Add VirusTotal integration, fix categorization, upgrade popup UI)
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(debug=debug, port=port, host='0.0.0.0')

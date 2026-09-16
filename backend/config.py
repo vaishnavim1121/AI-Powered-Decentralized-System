@@ -1,10 +1,17 @@
 import os
-from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Config:
-    SECRET_KEY = 's3cr3t-k3y-9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f'
-    BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'instance', 'app.db')
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'fallback-dev-secret-change-me')
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    if DATABASE_URL:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL.replace('postgres://', 'postgresql://')
+    else:
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(BASE_DIR, 'instance', 'app.db')
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    JWT_SECRET_KEY = 'jwt-s3cr3t-8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0'
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=5)
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'fallback-jwt-secret-change-me')
