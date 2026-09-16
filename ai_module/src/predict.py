@@ -14,7 +14,11 @@ def detect_threat_category(url):
         'Phishing': ['login', 'verify', 'update', 'secure', 'account', 'confirm', 'signin', 'password'],
         'Malware Distribution': ['.exe', 'download-installer', 'update-flash', 'codec', 'crack'],
         'Adult/Malicious Content': ['xxx', 'porn', 'adult', 'sex', 'hot-girls', 'nude'],
-        'Piracy/Malware': ['free-movies', 'torrent', 'crack', 'putlocker', '123movies', 'watch-free', 'watch-free-movies'],
+        'Piracy/Malware': ['free-movies', 'torrent', 'crack', 'putlocker', '123movies', 
+                           'watch-free', 'watch-free-movies', 'movierulz', 'tamilmv',
+                           'filmyzilla', 'filmywap', 'tamilrockers', '9xmovies',
+                           'kuttymovies', 'isaimini', 'tamilyogi', 'vegamovies',
+                           'katmoviehd', 'mlwbd', 'ssrmovies', 'hdhub', 'bolly4u'],
         'Crypto Scam': ['bitcoin', 'btc', 'eth', 'crypto', 'airdrop', 'doubler', 'giveaway', 'crypto-giveaway'],
         'Fake Prize/Lottery': ['prize', 'winner', 'won', 'gift-card', 'reward', 'voucher', 'lottery', 'free-iphone', 'free-amazon'],
         'Suspicious Domain': ['.xyz', '.tk', '.ml', '.ga', '.cf', '.gq', '.top', '.work', '.click', '.link'],
@@ -42,11 +46,20 @@ def is_known_malicious_pattern(url):
     url_lower = url.lower()
     
     malicious_indicators = [
+        # Piracy / Streaming
         'free-movies', 'free-video-xxx', 'cracked-software', 'torrent-download',
-        'watch-free', 'putlocker', '123movies', 'download-cracked',
+        'watch-free', 'putlocker', '123movies', '123movie', 'download-cracked',
+        'movierulz', 'tamilmv', 'filmyzilla', 'filmywap', '9xmovies',
+        'tamilrockers', 'kuttymovies', 'isaimini', 'tamilyogi', 'madrasrockers',
+        'hdhub', 'bolly4u', 'bollyshare', 'ssrmovies', 'vegamovies', 'mlwbd',
+        'katmoviehd', '5movie', '1movie', 'tamilmv',
+        # Crypto Scams
         'free-bitcoin', 'crypto-airdrop', 'btc-doubler',
+        # Fake Prize
         'you-won', 'claim-your-prize', 'winner-lottery',
+        # Adult
         'hot-girls-stream', 'xxx-video-free', 'porn-mega',
+        # Typosquatting
         'paypa1', 'gooogle', 'arnazon', 'faceb00k', 'g00gle',
     ]
     
@@ -132,6 +145,16 @@ def is_real_world_suspicious(url):
                   'is.gd', 'buff.ly', 'short.link', 'cutt.ly', 'rb.gy',
                   'rebrand.ly', 'bl.ink', 'shorturl.at', 'tiny.cc']
     if any(hostname == s or hostname.endswith('.' + s) for s in shorteners):
+        suspicious_score += 4
+    
+    # 12. Piracy site patterns (NEW)
+    piracy_keywords = ['movierulz', 'tamilmv', 'filmyzilla', 'filmywap', 
+                       'tamilrockers', '9xmovies', 'kuttymovies', 'isaimini',
+                       'tamilyogi', 'madrasrockers', 'hdhub', 'bolly4u',
+                       'vegamovies', 'katmoviehd', 'mlwbd', 'ssrmovies',
+                       'putlocker', '123movie', 'watch-free', 'free-movies',
+                       '5movie', '1movie']
+    if any(kw in url_lower for kw in piracy_keywords):
         suspicious_score += 4
     
     return suspicious_score >= 4
@@ -351,6 +374,8 @@ if __name__ == '__main__':
         "http://free-bitcoin-generator.xyz",
         "https://crypto-airdrop.gq",
         "http://you-won-iphone.xyz",
+        "https://5movierulz.solutions",
+        "https://www.5movierulz.solutions",
     ]
     
     print("\n" + "="*80)
