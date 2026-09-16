@@ -6,7 +6,7 @@
 // Extract features from a URL
 export const extractFeaturesFromUrl = (url) => {
   try {
-    const parsed = new URL(url);
+    new URL(url); // validates format
     const urlString = url;
     
     // Feature 1: URL Length

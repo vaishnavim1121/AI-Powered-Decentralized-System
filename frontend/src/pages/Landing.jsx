@@ -6,7 +6,6 @@ import '../styles/tokens.css';
 
 const Landing = () => {
   const [threatData, setThreatData] = useState([]);
-  const [showOptions, setShowOptions] = useState(false);
   
   useEffect(() => {
     const generateData = () => {

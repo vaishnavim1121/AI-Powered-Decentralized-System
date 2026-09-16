@@ -2,13 +2,11 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { extractFeaturesFromUrl, extractFeaturesFromHash, extractFeaturesFromFile } from '../services/featureExtraction';
 import '../components/Dashboard.css';
-
-const COLORS = ['#d45c4c', '#3a7d5a', '#c49a5c', '#4a8ba8'];
 
 function Dashboard() {
   const [threats, setThreats] = useState([]);
@@ -19,7 +17,7 @@ function Dashboard() {
   const [stats, setStats] = useState({ total: 0, malicious: 0, benign: 0 });
   const [selectedThreat, setSelectedThreat] = useState(null);
   const [detectedFeatures, setDetectedFeatures] = useState(null);
-  const [submissionResult, setSubmissionResult] = useState(null); // NEW: For result display
+  const [submissionResult, setSubmissionResult] = useState(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -98,19 +96,15 @@ function Dashboard() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Clear previous result
     setSubmissionResult(null);
     
     let features = [];
     let fileHash = null;
     let url = null;
-    let threatIdentifier = null;
-    let displayUrl = inputValue; // For display in result
+    let displayUrl = inputValue;
     
     if (selectedFile) {
       fileHash = `${selectedFile.name}-${selectedFile.size}`;
-      threatIdentifier = fileHash;
       displayUrl = selectedFile.name;
       if (detectedFeatures) {
         features = detectedFeatures.features;
@@ -122,12 +116,10 @@ function Dashboard() {
       const type = detectInputType(inputValue);
       if (type === 'url') {
         url = inputValue;
-        threatIdentifier = url;
         const result = extractFeaturesFromUrl(inputValue);
         features = result.features;
       } else if (type === 'hash') {
         fileHash = inputValue;
-        threatIdentifier = inputValue;
         const result = extractFeaturesFromHash(inputValue);
         features = result.features;
       } else {
@@ -153,7 +145,6 @@ function Dashboard() {
     try {
       const response = await api.post('/threat', payload);
       
-      // Store the result for display
       setSubmissionResult({
         prediction: response.data.prediction,
         confidence: response.data.confidence,
@@ -178,11 +169,6 @@ function Dashboard() {
   const handleThreatClick = (threat) => {
     setSelectedThreat(threat);
   };
-
-  const pieData = [
-    { name: 'Malicious', value: stats.malicious },
-    { name: 'Benign', value: stats.benign },
-  ];
 
   const trendData = threats.slice(0, 10).map(t => ({
     date: new Date(t.created_at).toLocaleString(),
@@ -210,7 +196,6 @@ function Dashboard() {
         </div>
       </header>
 
-      {/* Stats Cards */}
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Total Threats</h3>
@@ -230,7 +215,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* RESULT CARD - Shows after submission */}
       {submissionResult && (
         <div className="result-card">
           <div className="result-header">
@@ -273,7 +257,6 @@ function Dashboard() {
       )}
 
       <div className="dashboard-grid">
-        {/* Left Column - Charts & Alerts */}
         <div className="left-column">
           <div className="chart-card">
             <h3>Verdict signal</h3>
@@ -308,7 +291,6 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Right Column - Submission Form & Stats */}
         <div className="right-column">
           <div className="form-card">
             <h3>Submit a threat</h3>
@@ -367,7 +349,6 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Threats Table */}
       <div className="threats-card">
         <h3>Recent threats</h3>
         {loading ? (
@@ -417,7 +398,6 @@ function Dashboard() {
         )}
       </div>
 
-      {/* Modal */}
       {selectedThreat && (
         <div className="modal-overlay" onClick={() => setSelectedThreat(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
