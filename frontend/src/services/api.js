@@ -63,6 +63,11 @@ export const fetchThreats = () => {
   return api.get('/threats');
 };
 
+// Fetch single threat details
+export const fetchThreatDetail = (id) => {
+  return api.get(`/threats/${id}`);
+};
+
 export const fetchAlerts = () => {
   return api.get('/alerts');
 };

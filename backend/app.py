@@ -125,7 +125,8 @@ def categorize_threat(url):
     # Piracy
     if any(kw in url_lower for kw in ['123movie', 'putlocker', 'watch-free', 'free-movies', 
                                        'torrent', 'pirate', 'piratebay', 'yts', 'rarbg',
-                                       'movierulz', '5movie', 'tamilmv']):
+                                       'movierulz', '5movie', 'tamilmv', 'filmyzilla',
+                                       'filmywap', 'tamilrockers', '9xmovies']):
         return {
             'type': 'Piracy / Malware Distribution',
             'risk': 'high',
@@ -290,6 +291,24 @@ def get_threats():
         "confidence": t.confidence,
         "created_at": t.created_at.isoformat()
     } for t in threats])
+
+# ── Fetch single threat detail ──
+@app.route('/threats/<int:threat_id>', methods=['GET'])
+@jwt_required()
+def get_threat_detail(threat_id):
+    threat = Threat.query.get(threat_id)
+    if not threat:
+        return jsonify({"msg": "Threat not found"}), 404
+    return jsonify({
+        "id": threat.id,
+        "prediction": threat.prediction,
+        "confidence": threat.confidence,
+        "explanation": threat.explanation,
+        "file_hash": threat.file_hash,
+        "url": threat.url,
+        "blockchain_tx": threat.blockchain_tx,
+        "created_at": threat.created_at.isoformat()
+    })
 
 @app.route('/alerts', methods=['GET'])
 @jwt_required()

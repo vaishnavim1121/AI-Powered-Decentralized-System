@@ -1,86 +1,122 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import Navbar from '../components/Navbar';
+import React, { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import api from '../services/api';
 import { fetchThreatDetail } from '../services/api';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import '../components/Dashboard.css';
 
-export default function ThreatDetail() {
+function ThreatDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [threat, setThreat] = useState(null);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchThreatDetail(id)
-      .then((res) => setThreat(res.data))
-      .catch(() => setError('Could not load this threat — it may not exist, or the API is unreachable.'));
+  const fetchThreat = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetchThreatDetail(id);
+      setThreat(res.data);
+    } catch (error) {
+      console.error('Error fetching threat:', error);
+      setThreat(null);
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
 
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+    fetchThreat();
+  }, [fetchThreat, navigate]);
+
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <p>Loading threat details...</p>
+      </div>
+    );
+  }
+
+  if (!threat) {
+    return (
+      <div className="dashboard-container">
+        <h2>Threat not found</h2>
+        <Link to="/dashboard">Back to Dashboard</Link>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <Navbar />
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '32px 24px' }}>
-        <Link to="/dashboard" style={{ fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }}>&larr; Back to dashboard</Link>
+    <div className="dashboard-container">
+      <ToastContainer />
+      <header className="dashboard-header">
+        <h1>🛡️ Threat Details #{threat.id}</h1>
+        <Link to="/dashboard" className="logout-btn" style={{ textDecoration: 'none' }}>
+          Back to Dashboard
+        </Link>
+      </header>
 
-        {error && (
-          <p style={{ background: 'var(--signal-alert-bg)', color: 'var(--signal-alert)', padding: '10px 16px', borderRadius: 'var(--radius-sm)', marginTop: 20 }}>
-            {error}
-          </p>
-        )}
+      <div className="threats-card">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div>
+            <strong>Prediction</strong>
+            <p><span className={`badge ${threat.prediction}`}>{threat.prediction}</span></p>
+          </div>
+          <div>
+            <strong>Confidence</strong>
+            <p>{((threat.confidence || 0) * 100).toFixed(2)}%</p>
+          </div>
+          <div>
+            <strong>File Hash</strong>
+            <p style={{ fontFamily: 'monospace', fontSize: '12px', wordBreak: 'break-all' }}>
+              {threat.file_hash || 'N/A'}
+            </p>
+          </div>
+          <div>
+            <strong>URL</strong>
+            <p>{threat.url || 'N/A'}</p>
+          </div>
+          <div>
+            <strong>Blockchain Transaction</strong>
+            <p style={{ fontFamily: 'monospace', fontSize: '12px', wordBreak: 'break-all' }}>
+              {threat.blockchain_tx || 'Pending'}
+            </p>
+          </div>
+          <div>
+            <strong>Created At</strong>
+            <p>{new Date(threat.created_at).toLocaleString()}</p>
+          </div>
+        </div>
 
-        {!threat && !error && <p style={{ marginTop: 20, color: 'var(--text-secondary)' }}>Loading…</p>}
-
-        {threat && (
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ marginTop: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-              <span style={{
-                fontSize: 12, padding: '3px 10px', borderRadius: 20,
-                background: threat.prediction === 'malicious' ? 'var(--signal-alert-bg)' : 'var(--signal-verified-bg)',
-                color: threat.prediction === 'malicious' ? 'var(--signal-alert)' : 'var(--signal-verified)',
-              }}>{threat.prediction}</span>
-              <span className="mono-num" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{(threat.confidence * 100).toFixed(1)}% confidence</span>
-            </div>
-            <h1 style={{ fontSize: 22, margin: '0 0 20px' }}>Threat #{threat.id}</h1>
-
-            <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20, marginBottom: 16 }}>
-              {threat.file_hash && (
-                <div style={{ marginBottom: 12 }}>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 4px' }}>File hash</p>
-                  <p className="mono-num" style={{ fontSize: 13, wordBreak: 'break-all', margin: 0 }}>{threat.file_hash}</p>
+        {threat.explanation && (
+          <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e8e0d8' }}>
+            <h3>Explanation</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '12px' }}>
+              {Object.entries(threat.explanation).map(([key, value]) => (
+                <div key={key} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '8px 12px',
+                  background: '#f8f6f3',
+                  borderRadius: '6px'
+                }}>
+                  <span>{key}:</span>
+                  <span style={{ color: value > 0 ? '#d45c4c' : '#3a7d5a', fontWeight: '600' }}>
+                    {typeof value === 'number' ? value.toFixed(4) : value}
+                  </span>
                 </div>
-              )}
-              {threat.url && (
-                <div style={{ marginBottom: 12 }}>
-                  <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 4px' }}>URL</p>
-                  <p style={{ fontSize: 13, wordBreak: 'break-all', margin: 0 }}>{threat.url}</p>
-                </div>
-              )}
-              <div>
-                <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 4px' }}>Submitted</p>
-                <p style={{ fontSize: 13, margin: 0 }}>{new Date(threat.created_at).toLocaleString()}</p>
-              </div>
+              ))}
             </div>
-
-            {threat.explanation && (
-              <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20, marginBottom: 16 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, margin: '0 0 10px' }}>Why the model flagged this</p>
-                {Object.entries(threat.explanation).map(([feature, weight]) => (
-                  <div key={feature} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, padding: '4px 0' }}>
-                    <span style={{ color: 'var(--text-secondary)' }}>{feature}</span>
-                    <span className="mono-num">{typeof weight === 'number' ? weight.toFixed(2) : String(weight)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {threat.blockchain_tx && (
-              <div style={{ background: 'var(--bg-ink)', color: 'var(--text-on-ink)', borderRadius: 'var(--radius-lg)', padding: 20 }}>
-                <p style={{ fontSize: 13, color: 'var(--text-on-ink-muted)', margin: '0 0 6px' }}>Verified on-chain</p>
-                <p className="mono-num" style={{ fontSize: 12, wordBreak: 'break-all', margin: 0 }}>{threat.blockchain_tx}</p>
-              </div>
-            )}
-          </motion.div>
+          </div>
         )}
       </div>
     </div>
   );
 }
+
+export default ThreatDetail;
