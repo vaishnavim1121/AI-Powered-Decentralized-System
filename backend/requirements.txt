@@ -16,3 +16,4 @@ joblib==1.4.2
 shap==0.46.0
 web3==6.20.3
 python-whois==0.9.4
+psycopg2-binary==2.9.9
