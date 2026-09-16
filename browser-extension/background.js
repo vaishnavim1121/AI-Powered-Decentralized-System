@@ -2,7 +2,7 @@
 // ADCTIN Browser Extension - Background Service
 // ============================================
 
-const API_URL = 'http://127.0.0.1:5000';
+const API_URL = 'https://adctin-backend.onrender.com';
 const CACHE_DURATION = 5 * 60 * 1000;
 const NAVIGATION_THROTTLE_MS = 1500;
 
